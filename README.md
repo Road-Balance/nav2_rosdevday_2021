@@ -23,9 +23,9 @@ mkdir -p colcon_ws/src
 cd colcon_ws/src
 
 # Get the demo code
-git clone git@github.com:stevemacenski/nav2_rosdevday_2021.git
+git clone https://github.com/Road-Balance/nav2_rosdevday_2021.git
 
-# Get the dependencies not shipped with Galactic at June 8, 2021.
+# Get the dependencies not shipped with foxy
 vcs import . < nav2_rosdevday_2021/deps.repos
 cd ../
 
@@ -33,7 +33,7 @@ cd ../
 rosdep install --from-path src --ignore-src -r -y
 
 # Build the workspace
-source /opt/ros/galactic/setup.bash
+source /opt/ros/foxy/setup.bash
 colcon build
 ```
 
@@ -42,20 +42,16 @@ colcon build
 You can see step-by-steps in the `main.ipynb` file (which can be launched via `jupyter-notebook main.ipynb`). In general though after building the demos can be launched as (after setting the proper `GAZEBO_MODEL_PATH`s):
 
 ``` bash
+cd scripts && chmod +x *
+
 source colcon_ws/install/setup.bash
 ros2 launch nav2_rosdevday_2021 system_launch.py # launches simulation, rviz, nav2
 
+# With demos being:
 source colcon_ws/install/setup.bash
-python3 colcon_ws/src/nav2_rosdevday_2021/nav2_rosdevday_2021/scripts/{pick a demo}.py # launches autonomy or API demo
+ros2 run nav2_rosdevday_2021 picking_demo.py 
+ros2 run nav2_rosdevday_2021 inspection_demo.py
 ```
-
-With demos being:
-- `picking_demo.py`
-- `security_demo.py`
-- `inspection_demo.py`
-- `nav_to_pose_demo.py`
-- `nav_through_poses_demo.py`
-- `waypoint_follower_demo.py`
 
 The first 3 are example demo applications using Nav2 tools. The final 3 are full examples of using the `robot_navigator.py` file for python3-based Nav2-as-a-library. Each are well commented and self explanatory.
 

@@ -21,8 +21,8 @@ from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchD
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PythonExpression
+from launch_ros.substitutions import FindPackageShare
 from launch_ros.actions import Node
-
 
 def generate_launch_description():
     # Get the launch directory
@@ -59,6 +59,12 @@ def generate_launch_description():
         default_value=os.path.join(
             warehouse_dir, 'maps', '005', 'map.yaml'),
         description='Full path to map file to load')
+
+    # declare_map_yaml_cmd = DeclareLaunchArgument(
+    #     'map',
+    #     default_value=os.path.join(
+    #         bringup_dir, 'maps', 'map.yaml'),
+    #     description='Full path to map file to load')
 
     declare_use_sim_time_cmd = DeclareLaunchArgument(
         'use_sim_time',
@@ -97,17 +103,16 @@ def generate_launch_description():
             robot_model_dir, 'robots', 'mp_400', 'mp_400.urdf'),
         description='Full path to world model file to load')
 
-    # Specify the actions
-    start_gazebo_server_cmd = ExecuteProcess(
-        condition=IfCondition(use_simulator),
-        cmd=['gzserver', '-s', 'libgazebo_ros_factory.so', world],
-        cwd=[warehouse_dir], output='screen')
+    pkg_gazebo_ros = FindPackageShare(package='gazebo_ros').find('gazebo_ros')   
+    start_gazebo_server_cmd = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(os.path.join(pkg_gazebo_ros, 'launch', 'gzserver.launch.py')),
+        launch_arguments={'world': world}.items()
+    )
 
-    start_gazebo_client_cmd = ExecuteProcess(
-        condition=IfCondition(PythonExpression(
-            [use_simulator, ' and not ', headless])),
-        cmd=['gzclient'],
-        cwd=[warehouse_dir], output='screen')
+    # Start Gazebo client    
+    start_gazebo_client_cmd = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(os.path.join(pkg_gazebo_ros, 'launch', 'gzclient.launch.py'))
+    )
 
     spawn_entity_cmd = Node(
         package='gazebo_ros',
@@ -186,12 +191,14 @@ def generate_launch_description():
     ld.add_action(declare_simulator_cmd)
     ld.add_action(declare_world_cmd)
     ld.add_action(declare_urdf_cmd)
+
     ld.add_action(start_gazebo_server_cmd)
     ld.add_action(start_gazebo_client_cmd)
-    ld.add_action(spawn_entity_cmd)
     ld.add_action(start_robot_state_publisher_cmd)
+    ld.add_action(spawn_entity_cmd)
     ld.add_action(rviz_cmd)
     ld.add_action(bringup_cmd)
+
     # UNCOMMENT HERE FOR KEEPOUT DEMO
     # ld.add_action(start_lifecycle_manager_cmd)
     # ld.add_action(start_map_server_cmd)
