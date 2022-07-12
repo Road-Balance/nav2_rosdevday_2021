@@ -86,10 +86,8 @@ def main():
         i = i + 1
         feedback = navigator.getFeedback()
         if feedback and i % 5 == 0:
-            print('Estimated time of arrival at ' + request_item_location +
-                  ' for worker: ' + '{0:.0f}'.format(
-                  Duration.from_msg(feedback.estimated_time_remaining).nanoseconds / 1e9)
-                  + ' seconds.')
+            print('Remaining Distance location from ' + request_item_location +
+                  ' : ' + str(feedback.distance_remaining))
 
     result = navigator.getResult()
     if result == NavigationResult.SUCCEEDED:
